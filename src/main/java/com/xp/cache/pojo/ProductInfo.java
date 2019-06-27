@@ -15,6 +15,7 @@ public class ProductInfo implements Serializable {
     private String afterSaleService;
     private String color;
     private String size;
+    private String updateTime;
 
     public Integer getId() {
         return id;
@@ -80,6 +81,14 @@ public class ProductInfo implements Serializable {
         this.size = size;
     }
 
+    public String getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(String updateTime) {
+        this.updateTime = updateTime;
+    }
+
     public ProductInfo() {
     }
 
@@ -94,6 +103,7 @@ public class ProductInfo implements Serializable {
                 ", afterSaleService='" + afterSaleService + '\'' +
                 ", color='" + color + '\'' +
                 ", size='" + size + '\'' +
+                ", updateTime='" + updateTime + '\'' +
                 '}';
     }
 }

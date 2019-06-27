@@ -119,6 +119,13 @@
             <artifactId>kafka_2.11</artifactId>
             <version>0.11.0.0</version>
         </dependency>
+
+        <!--zookeeper-->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.10</version>
+        </dependency>
     </dependencies>
 
     <build>
