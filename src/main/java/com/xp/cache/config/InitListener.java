@@ -1,6 +1,8 @@
 package com.xp.cache.config;
 
 import com.xp.cache.kafka.KafkaConsumerThread;
+import com.xp.cache.rebuild.RebuildCacheThread;
+import com.xp.cache.zookeeper.ZookeeperSession;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -22,6 +24,13 @@ public class InitListener implements ServletContextListener {
 
         //项目启动,开启kafka消费者线程,监听指定的topic接受消息
         new Thread(new KafkaConsumerThread("cache-messagecache-message")).start();
+
+        //启动zookeeper session
+        ZookeeperSession.init();
+
+        //启动缓存重建线程
+        new Thread(new RebuildCacheThread()).start();
+
     }
 
     @Override
