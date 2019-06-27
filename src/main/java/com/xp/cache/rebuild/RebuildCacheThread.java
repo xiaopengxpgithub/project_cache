@@ -47,6 +47,9 @@ public class RebuildCacheThread implements Runnable {
                     }
                 }
 
+                //②.将查询到的商品信息缓存到本地的ehcache缓存中
+                iCacheService.saveProductInfoToLocal(productInfo);
+
                 //如果最新数据的更新时间晚于已经存在的缓存中的数据的时间/或者缓存中没有该数据,正常更新缓存中的数据
                 //③.将查询到的商品信息缓存到redis缓存中
                 LOGGER.info("更新" + productInfo.getId() + "数据缓存数据");

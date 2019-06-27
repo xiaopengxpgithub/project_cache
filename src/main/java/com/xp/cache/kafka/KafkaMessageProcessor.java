@@ -92,9 +92,6 @@ public class KafkaMessageProcessor implements Runnable {
         String productInfoJSON = "{\"id\": 1, \"name\": \"iphone7手机\", \"price\": 5599, \"pictureList\":\"a.jpg,b.jpg\", \"specification\": \"iphone7的规格\", \"afterSaleService\": \"iphone7的售后服务\", \"color\": \"红色,白色,黑色\", \"size\": \"5.5\", \"shopId\": 1,\"updateTime\": \"2019-06-24 15:30:21\"}";
 
         ProductInfo productInfo = JSONObject.parseObject(productInfoJSON, ProductInfo.class);
-        //②.将查询到的商品信息缓存到本地的ehcache缓存中
-        iCacheService.saveProductInfoToLocal(productInfo);
-        LOGGER.info("====================获取缓存到本地的商品信息:" + iCacheService.getProductInfoFromLocalCache(productId));
 
         //注意:正式环境中,当前这个缓存服务可能会部署多份,那么就会有多个服务操作redis,会出现并发冲突问题,所以需要使用分布式锁
         //获取分布式锁
@@ -115,6 +112,10 @@ public class KafkaMessageProcessor implements Runnable {
                 return;
             }
         }
+
+        //②.将查询到的商品信息缓存到本地的ehcache缓存中
+        iCacheService.saveProductInfoToLocal(productInfo);
+        LOGGER.info("====================获取缓存到本地的商品信息:" + iCacheService.getProductInfoFromLocalCache(productId));
 
         //如果最新数据的更新时间晚于已经存在的缓存中的数据的时间/或者缓存中没有该数据,正常更新缓存中的数据
         //③.将查询到的商品信息缓存到redis缓存中

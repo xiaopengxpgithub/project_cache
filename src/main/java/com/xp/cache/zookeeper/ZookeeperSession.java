@@ -69,8 +69,8 @@ public class ZookeeperSession {
             while (true) {
 
                 try {
-                    //每隔200毫秒尝试获取一次锁
-                    Thread.sleep(200);
+                    //每隔1000毫秒尝试获取一次锁
+                    Thread.sleep(1000);
                     zookeeper.create(path, "".getBytes(),
                             ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
                 } catch (Exception e2) {
