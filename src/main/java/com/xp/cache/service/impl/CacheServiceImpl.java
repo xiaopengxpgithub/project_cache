@@ -1,15 +1,16 @@
 package com.xp.cache.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
+import com.xp.cache.hystrix.GetProductInfoFromRedisCommand;
+import com.xp.cache.hystrix.GetShopInfoFromRedisCommand;
+import com.xp.cache.hystrix.SaveProductInfoToRedisCacheCommand;
+import com.xp.cache.hystrix.SaveShopInfoToRedisCacheCommand;
 import com.xp.cache.pojo.ProductInfo;
 import com.xp.cache.pojo.ShopInfo;
 import com.xp.cache.service.ICacheService;
-import com.xp.cache.utils.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import redis.clients.jedis.JedisCluster;
 
 @Service
@@ -51,14 +52,16 @@ public class CacheServiceImpl implements ICacheService {
 
     @Override
     public void saveProductInfoToRedis(ProductInfo productInfo) {
-        String key = Constant.REDIS_CACHE_PRODUCTINFO + productInfo.getId();
-        jedisCluster.set(key, JSONObject.toJSONString(productInfo));
+        //资源隔离
+        SaveProductInfoToRedisCacheCommand saveProductInfoToRedisCacheCommand = new SaveProductInfoToRedisCacheCommand(productInfo);
+        saveProductInfoToRedisCacheCommand.execute();
     }
 
     @Override
     public void saveShopInfoToRedis(ShopInfo shopInfo) {
-        String key = Constant.REDIS_CACHE_SHOPINFO + shopInfo.getId();
-        jedisCluster.set(key, JSONObject.toJSONString(shopInfo));
+        //资源隔离
+        SaveShopInfoToRedisCacheCommand saveShopInfoToRedisCacheCommand = new SaveShopInfoToRedisCacheCommand(shopInfo);
+        saveShopInfoToRedisCacheCommand.execute();
     }
 
     @Cacheable(value = CACHE_NAME, key = "'product_info_'+#productId")
@@ -75,22 +78,15 @@ public class CacheServiceImpl implements ICacheService {
 
     @Override
     public ProductInfo getProductInfoFromRedisCache(Integer productId) {
-        String key = Constant.REDIS_CACHE_PRODUCTINFO + productId;
-        String result = jedisCluster.get(key);
-        if (!StringUtils.isEmpty(result)) {
-            return JSONObject.parseObject(result, ProductInfo.class);
-        }
-        return null;
+        //资源隔离
+        GetProductInfoFromRedisCommand getProductInfoFromRedisCommand = new GetProductInfoFromRedisCommand(productId);
+        return getProductInfoFromRedisCommand.execute();
     }
 
     @Override
     public ShopInfo getShopInfoFromRedisCache(Integer shopId) {
-        String key = Constant.REDIS_CACHE_SHOPINFO + shopId;
-        String result = jedisCluster.get(key);
-        if (!StringUtils.isEmpty(result)) {
-            return JSONObject.parseObject(result, ShopInfo.class);
-        }
-
-        return null;
+        //资源隔离
+        GetShopInfoFromRedisCommand getShopInfoFromRedisCommand = new GetShopInfoFromRedisCommand(shopId);
+        return getShopInfoFromRedisCommand.execute();
     }
 }
