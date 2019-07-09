@@ -3,6 +3,7 @@ package com.xp.cache.hystrix;
 import com.alibaba.fastjson.JSONObject;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixCommandProperties;
 import com.xp.cache.config.SpringContext;
 import com.xp.cache.pojo.ProductInfo;
 import com.xp.cache.utils.Constant;
@@ -17,7 +18,13 @@ public class SaveProductInfoToRedisCacheCommand extends HystrixCommand<Boolean> 
 
     public SaveProductInfoToRedisCacheCommand(ProductInfo productInfo) {
         //使用同一个线程池中的线程处理
-        super(HystrixCommandGroupKey.Factory.asKey("RedisGroup"));
+        super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("RedisGroup"))
+                .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+                        .withExecutionTimeoutInMilliseconds(100)
+                        .withCircuitBreakerRequestVolumeThreshold(1000)
+                        .withCircuitBreakerErrorThresholdPercentage(70)
+                        .withCircuitBreakerSleepWindowInMilliseconds(60 * 1000))
+        );
         this.productInfo = productInfo;
     }
 
@@ -29,5 +36,10 @@ public class SaveProductInfoToRedisCacheCommand extends HystrixCommand<Boolean> 
         jedisCluster.set(key, JSONObject.toJSONString(productInfo));
 
         return true;
+    }
+
+    @Override
+    protected Boolean getFallback() {
+        return false;
     }
 }

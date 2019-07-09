@@ -3,6 +3,7 @@ package com.xp.cache.hystrix;
 import com.alibaba.fastjson.JSONObject;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixCommandProperties;
 import com.xp.cache.config.SpringContext;
 import com.xp.cache.pojo.ProductInfo;
 import com.xp.cache.utils.Constant;
@@ -18,7 +19,13 @@ public class GetProductInfoFromRedisCommand extends HystrixCommand<ProductInfo> 
 
     public GetProductInfoFromRedisCommand(Integer productId){
         //使用同一个线程池中的线程处理
-        super(HystrixCommandGroupKey.Factory.asKey("RedisGroup"));
+        super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("RedisGroup"))
+                .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+                        .withExecutionTimeoutInMilliseconds(100)
+                        .withCircuitBreakerRequestVolumeThreshold(1000)
+                        .withCircuitBreakerErrorThresholdPercentage(70)
+                        .withCircuitBreakerSleepWindowInMilliseconds(60 * 1000))
+        );
         this.productId=productId;
     }
 
@@ -31,6 +38,11 @@ public class GetProductInfoFromRedisCommand extends HystrixCommand<ProductInfo> 
         if (!StringUtils.isEmpty(result)) {
             return JSONObject.parseObject(result, ProductInfo.class);
         }
+        return null;
+    }
+
+    @Override
+    protected ProductInfo getFallback() {
         return null;
     }
 }
